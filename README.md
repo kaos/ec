@@ -69,19 +69,19 @@ values, much in the same way `file:consult/1` works.
 ec api
 ======
 
-Brief overview of the `ec` api.
+Brief overview of the `ec` api (refer to generated docs for full details).
 
-  * `ec:compile(File) :: {ok, Module} | error` Compile `.ec` file to `.beam`
+  * `ec:compile_file(Filename) :: {ok, Module} | error` Compile `.ec` file to `.beam`
     module.
-  * `ec:parse(File) :: {ok, [term()]} | error` Parse `.ec` file into list of
+  * `ec:parse_file(Filename) :: {ok, [term()]} | error` Parse `.ec` file into list of
     `term()` values.
 
-These functions also support a optional second argument with a list of
-options to use:
+These functions also support an optional second argument with a list
+of options to use:
 
-  * `report`, `return`, `*_errors`, `*_warnings`, `warnings_as_errors`
-    Report and/or return errors and/or warnings. And if warnings
-    should be treated as errors.
+  * `report`, `return`, `*_errors`, `*_warnings` Report and/or return
+    errors and/or warnings.
+  * `warnings_as_errors` Treat warnings as errors.
   * `verbose` Be verbose.
   * `out_dir` If the compiled module should be saved to disk.
   * `force` Recompile, even if an up-to-date `.beam` module is found
