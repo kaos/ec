@@ -21,8 +21,8 @@
 
 -spec parse(string()) -> {ok, list()} | error.
 parse(S) ->
-    case ec_scanner:string(S) of
+    case ec_scan:string(S) of
         {ok, Tokens, _} ->
-            ec_compile:tokens(Tokens);
-        _ -> error
+            ec_parse:tokens(Tokens);
+        Err -> Err
     end.

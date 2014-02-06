@@ -14,20 +14,31 @@
 %%   limitations under the License.
 %%  
 
--module(ec_compile).
+-module(ec_parse).
 
 -export([tokens/1]).
 
 -include_lib("merl/include/merl.hrl").
 
--spec tokens(list()) -> {ok, list()} | error.
+-spec tokens(list()) -> {ok, list()}.
 tokens(Ts) ->
-    {ok, [compile_token(T) || T <- Ts]}.
+    parse_tokens(Ts, []).
 
-compile_token({expr, S}) ->
+parse_tokens([], Ps) -> {ok, lists:reverse(Ps)};
+parse_tokens([{expr, S}|Ts], Ps) ->
+    parse_tokens(Ts, [normalise(S)|Ps]);
+parse_tokens([{begin_object, S}|Ts0], Ps) ->
+    {Ts, Obj} = parse_tokens(Ts0, []),
+    parse_tokens(Ts, [{normalise(S), Obj}|Ps]);
+parse_tokens([end_object|Ts], Ps) ->
+    {Ts, lists:reverse(Ps)}.
+
+normalise(S) ->
     {ok, E} = erl_parse:parse_exprs(S),
     case E of
         ?Q("_@Key = _@Value") ->
             {erl_parse:normalise(Key),
-             erl_parse:normalise(Value)}
+             erl_parse:normalise(Value)};
+        ?Q("_@Key") ->
+            erl_parse:normalise(Key)
     end.

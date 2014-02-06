@@ -22,4 +22,11 @@ check: TEST_DEPS=
 check: DEPS=
 check: tests
 
-.PHONY: check
+proper: TEST_DEPS=
+proper: DEPS=
+proper: clean deps app build-tests
+	erl -pa ebin $(DEPS_DIR)/*/ebin test -noshell \
+		-eval '[proper:F(ec_props) || F <- [check_specs, module]]' \
+		-s init stop
+
+.PHONY: check proper

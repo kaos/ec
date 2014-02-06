@@ -23,10 +23,28 @@ Rules.
 
 #.*\n : skip_token.
 [{WS}]+ : skip_token.
-[^#{WS}][^={WS}]*[^=]*=(\\.|[^\n])* : {token, prop(TokenChars, TokenLine)}.
+[^#{WS}\}][^={WS}]*[^=]*=(\\.|[^\n])* : {token, prop(TokenChars, TokenLine)}.
+[^#{WS}\}][^{WS}]*[^\{]*\{ : {token, object(TokenChars, TokenLine)}.
+\} : {token, end_object}.
 
 Erlang code.
 
 prop(Chars, Line) ->
-    {ok, Tokens, _} = erl_scan:string(Chars ++ ".", {Line, 1}),
+    {ok, Tokens, _} = erl_scan:string(drop_trailing_ws(Chars) ++ ".", Line),
     {expr, Tokens}.
+
+drop_trailing_ws(Chars) ->
+    lists:foldr(
+      fun ($\s, []) -> [];
+          ($\t, []) -> [];
+          ($\n, []) -> [];
+          ($=, []) ->[];
+          (C, Acc) -> [C|Acc]
+      end,
+      [], Chars).
+
+object(Chars, Line) ->
+    {ok, Tokens, _} = erl_scan:string(
+                        string:strip(Chars, right, ${) ++ ".",
+                        Line),
+    {begin_object, Tokens}.

@@ -53,7 +53,34 @@ prop_parse_key_value_pairs() ->
            S = lists:flatten(
                  [io_lib:format("~p = ~w~n", [K, V])
                   || {K, V} <- Ps]),
-           {ok, Ps} = ec:parse(S)
+           {ok, Ps} = ec:parse(S),
+           true
+       end).
+
+%%% ----------------------------------------
+prop_parse_empty() ->
+    ?FORALL(
+       Ps, list(atom()),
+       begin
+           S = lists:flatten(
+                 [io_lib:format("~p=~n", [K])
+                  || K <- Ps]),
+           {ok, Ps} = ec:parse(S),
+           true
+       end).
+
+%%% ----------------------------------------
+prop_parse_object() ->
+    ?FORALL(
+       {Obj, Ps}, {atom(), list({atom(), term()})},
+       begin
+           P = [io_lib:format("\n\t~p = ~w", [K, V])
+                || {K, V} <- Ps],
+           S = lists:flatten(
+                 io_lib:format(
+                   "~p {~s~n}", [Obj, P])),
+           {ok, [{Obj, Ps}]} = ec:parse(S),
+           true
        end).
 
 %%% ----------------------------------------
