@@ -18,13 +18,16 @@
 Definitions.
 
 WS = \s\t\r\n
+OBJ = \{\}
+NOKEY = \'=#{WS}{OBJ}
+KEY = ([^{NOKEY}]+|\'(\\.|[^\'])*\')[{WS}]*
 
 Rules.
 
 #.*\n : skip_token.
 [{WS}]+ : skip_token.
-[^#{WS}\}][^={WS}]*[^=]*=(\\.|[^\n])* : {token, prop(TokenChars, TokenLine)}.
-[^#{WS}\}][^{WS}]*[^\{]*\{ : {token, object(TokenChars, TokenLine)}.
+{KEY}=(\\.|[^\n])* : {token, prop(TokenChars, TokenLine)}.
+{KEY}\{ : {token, object(TokenChars, TokenLine)}.
 \} : {token, end_object}.
 
 Erlang code.

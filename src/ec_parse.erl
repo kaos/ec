@@ -20,9 +20,9 @@
 
 -include_lib("merl/include/merl.hrl").
 
--spec tokens(list()) -> {ok, list()}.
+-spec tokens(list()) -> {ok, list()} | {error, {erl_scan:line(), atom(), term()}}.
 tokens(Ts) ->
-    parse_tokens(Ts, []).
+    catch parse_tokens(Ts, []).
 
 parse_tokens([], Ps) -> {ok, lists:reverse(Ps)};
 parse_tokens([{expr, S}|Ts], Ps) ->
@@ -34,11 +34,15 @@ parse_tokens([end_object|Ts], Ps) ->
     {Ts, lists:reverse(Ps)}.
 
 normalise(S) ->
-    {ok, E} = erl_parse:parse_exprs(S),
-    case E of
-        ?Q("_@Key = _@Value") ->
-            {erl_parse:normalise(Key),
-             erl_parse:normalise(Value)};
-        ?Q("_@Key") ->
-            erl_parse:normalise(Key)
+    case erl_parse:parse_exprs(S) of
+        {ok, E} ->
+            case E of
+                ?Q("_@Key = _@Value") ->
+                    {erl_parse:normalise(Key),
+                     erl_parse:normalise(Value)};
+                ?Q("_@Key") ->
+                    erl_parse:normalise(Key)
+            end;
+        Err ->
+            throw(Err)
     end.

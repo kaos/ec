@@ -53,8 +53,7 @@ prop_parse_key_value_pairs() ->
            S = lists:flatten(
                  [io_lib:format("~p = ~w~n", [K, V])
                   || {K, V} <- Ps]),
-           {ok, Ps} = ec:parse(S),
-           true
+           {ok, Ps} =:= ec:parse(S)
        end).
 
 %%% ----------------------------------------
@@ -65,23 +64,30 @@ prop_parse_empty() ->
            S = lists:flatten(
                  [io_lib:format("~p=~n", [K])
                   || K <- Ps]),
-           {ok, Ps} = ec:parse(S),
-           true
+           {ok, Ps} =:= ec:parse(S)
        end).
 
 %%% ----------------------------------------
 prop_parse_object() ->
     ?FORALL(
        {Obj, Ps}, {atom(), list({atom(), term()})},
-       begin
-           P = [io_lib:format("\n\t~p = ~w", [K, V])
-                || {K, V} <- Ps],
-           S = lists:flatten(
-                 io_lib:format(
-                   "~p {~s~n}", [Obj, P])),
-           {ok, [{Obj, Ps}]} = ec:parse(S),
-           true
-       end).
+       %% ?WHENFAIL(
+       %%    io:format("parse object failed~n"),
+          begin
+              P = [io_lib:format("\n\t~p = ~w", [K, V])
+                   || {K, V} <- Ps],
+              S = lists:flatten(
+                    io_lib:format(
+                      "~p {~s~n}", [Obj, P])),
+              {ok, [{Obj, Ps}]} =:= ec:parse(S)
+              %% case ec:parse(S) of
+              %%     {ok, [{Obj, Ps}]} -> true;
+              %%     {error, {Line, Mod, Desc}} ->
+              %%         io:format("ERROR on line ~b: ~s~n~s~n",
+              %%                   [Line, Mod:format_error(Desc), S]),
+              %%         false
+              %% end
+          end). %%).
 
 %%% ----------------------------------------
 %%% ----------------------------------------
