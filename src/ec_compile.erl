@@ -26,10 +26,8 @@ tokens(Ts) ->
 
 compile_token({expr, S}) ->
     {ok, E} = erl_parse:parse_exprs(S),
-    merl:switch(
-      E, [{?Q("_@key = _@value"),
-           fun ([{key, Key}, {value, Value}]) ->
-                   {erl_parse:normalise(Key),
-                    erl_parse:normalise(Value)}
-           end}
-         ]).
+    case E of
+        ?Q("_@Key = _@Value") ->
+            {erl_parse:normalise(Key),
+             erl_parse:normalise(Value)}
+    end.

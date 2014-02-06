@@ -17,12 +17,14 @@
 -module(ec_props).
 
 -include_lib("proper/include/proper.hrl").
+%%% ----------------------------------------
 
 %%-type text() :: [32..126].
 text() -> list(range(32,126)).
 
 %%-type newline() :: [10].
 
+%%% ----------------------------------------
 comments() ->
     ?SIZED(S, comments(S, [])).
 
@@ -43,31 +45,16 @@ prop_parse_comments() ->
        {ok, []} =:= ec:parse(lists:flatten(C))
       ).
 
-number_props()->
-    ?SIZED(S, number_props(S, [])).
-
-number_props(0, Acc) ->
-    {lists:reverse(Acc), length(Acc)};
-number_props(S, Acc) ->
-    number_props(
-      S - 1,
-      [?LET(
-          [K, V], [atom(), number()],
-          io_lib:format("~p=~p~n", [K, V]))
-       |Acc]).
-
-prop_parse_number() ->
+%%% ----------------------------------------
+prop_parse_key_value_pairs() ->
     ?FORALL(
-       {C, L}, number_props(),
+       Ps, list({atom(), term()}),
        begin
-           S = lists:flatten(C),
-           {ok, Props} = ec:parse(S),
-           L = length(Props),
-           [case Prop of
-                {Key, Value}
-                  when is_atom(Key),
-                       is_number(Value) ->
-                    ok
-            end || Prop <- Props],
-           true
+           S = lists:flatten(
+                 [io_lib:format("~p = ~w~n", [K, V])
+                  || {K, V} <- Ps]),
+           {ok, Ps} = ec:parse(S)
        end).
+
+%%% ----------------------------------------
+%%% ----------------------------------------
