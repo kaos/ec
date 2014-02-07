@@ -71,23 +71,25 @@ prop_parse_empty() ->
 prop_parse_object() ->
     ?FORALL(
        {Obj, Ps}, {atom(), list({atom(), term()})},
-       %% ?WHENFAIL(
-       %%    io:format("parse object failed~n"),
-          begin
-              P = [io_lib:format("\n\t~p = ~w", [K, V])
-                   || {K, V} <- Ps],
-              S = lists:flatten(
-                    io_lib:format(
-                      "~p {~s~n}", [Obj, P])),
-              {ok, [{Obj, Ps}]} =:= ec:parse(S)
-              %% case ec:parse(S) of
-              %%     {ok, [{Obj, Ps}]} -> true;
-              %%     {error, {Line, Mod, Desc}} ->
-              %%         io:format("ERROR on line ~b: ~s~n~s~n",
-              %%                   [Line, Mod:format_error(Desc), S]),
-              %%         false
-              %% end
-          end). %%).
+       begin
+           P = [io_lib:format("\n\t~p = ~w", [K, V])
+                || {K, V} <- Ps],
+           S = lists:flatten(
+                 io_lib:format(
+                   "~p {~s~n}", [Obj, P])),
+           {ok, [{Obj, Ps}]} =:= ec:parse(S)
+       end).
+
+%%% ----------------------------------------
+prop_duplicate_keys() ->
+    ?FORALL(
+       {Key, Vs}, {atom(), list(term())},
+       begin
+           S = lists:flatten(
+                 [io_lib:format("~p = ~w~n", [Key, V])
+                  || V <- Vs]),
+           {ok, [{Key, V} || V <- Vs]} =:= ec:parse(S)
+       end).
 
 %%% ----------------------------------------
 %%% ----------------------------------------

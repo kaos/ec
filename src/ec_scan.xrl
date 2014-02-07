@@ -34,8 +34,30 @@ Rules.
 Erlang code.
 
 prop(Chars, Line) ->
-    {ok, Tokens, _} = erl_scan:string(drop_trailing_ws(Chars) ++ ".", Line),
-    {expr, Tokens}.
+    {expr, scan(drop_trailing_ws(Chars), Line)}.
+
+object(Chars, Line) ->
+    {begin_object, scan(string:strip(Chars, right, ${), Line)}.
+
+scan(Chars, Line) ->
+    {ok, Tokens, _} = erl_scan:string(unescape(Chars) ++ ".", Line),
+    Tokens.
+
+
+unescape($n) -> $\n;
+unescape($r) -> $\r;
+unescape($t) -> $\t;
+unescape($s) -> $\s;
+unescape(C) when is_integer(C) -> C;
+unescape(Cs) when is_list(Cs) -> unescape(Cs, []).
+
+unescape([], Acc) ->
+    lists:reverse(Acc);
+unescape([$\\,C|Cs], Acc) when C < $0, C > $9 ->
+    unescape(Cs, [unescape(C)|Acc]);
+unescape([C|Cs], Acc) ->
+    unescape(Cs, [C|Acc]).
+
 
 drop_trailing_ws(Chars) ->
     lists:foldr(
@@ -46,9 +68,3 @@ drop_trailing_ws(Chars) ->
           (C, Acc) -> [C|Acc]
       end,
       [], Chars).
-
-object(Chars, Line) ->
-    {ok, Tokens, _} = erl_scan:string(
-                        string:strip(Chars, right, ${) ++ ".",
-                        Line),
-    {begin_object, Tokens}.

@@ -17,19 +17,22 @@ An easy config file (which should use a `.ec` suffix) may look like this:
     simple = "My value"
     
     # Some key-value pairs with not so simple values
-    tuple = this, is, 'a tuple'
+    tuple = {this, is, 'a tuple'}
     
-    array = "first value is a string"
-    array = other_value_is_an_atom
-    array = \
+    duplicates = "first value is a string"
+    duplicates = other_value_is_an_atom
+
+    # Values run until end of line.
+    # Escape the new line for multi-line values..
+    duplicates = [\
         third, \
-        is a, \
-        tuple
+        'is an', \
+        array \
+    ]
 
     empty =
     
     # object like properties
-    
     obj {
         a_key = 123
         also_array = [12, foo, "bar, baz", {tuple, 42}]
@@ -44,11 +47,15 @@ An easy config file (which should use a `.ec` suffix) may look like this:
 #### A few noteworthy things
 
   * Backslash is used as escape char.
-  * White space (of any kind) around `=` and between key and `{` is allowed.
+  * White space (of any kind) around `=` and between key and `{` is
+    allowed.
   * Keys and object names are atoms.
-  * Values are either numbers, atoms, strings, tuples or arrays.
-  * Any key can be turned into an array by defining additional values
-    to it (even objects).
+  * Values are either numbers, atoms, strings, tuples or arrays (or,
+    any Erlang term, really).
+  * Duplicated keys result in multiple instances of it, rather than
+    any one value overriding the others.
+  * For most parts, it's still Erlang syntax, so keys being atoms
+    means that `'@#$%\\nhuh'` is a valid key.
 
 
 How it works
@@ -62,14 +69,14 @@ file changes during hot code upgrade. In this mode, the application
 should start a "config" server to interact with to get a fixed config
 version.
 
-`ec` also supports compiling `.ec` files to plain erlang `term()`
-values, much in the same way `file:consult/1` works.
+`ec` also supports parsing `.ec` files to plain erlang proplists
+(which is a intermediate step when compiling to .beam modules).
 
 
 ec api
 ======
 
-Brief overview of the `ec` api (refer to generated docs for full details).
+Brief overview of the `ec` api:
 
   * `ec:compile_file(Filename) :: {ok, Module} | error` Compile `.ec` file to `.beam`
     module.
@@ -77,7 +84,7 @@ Brief overview of the `ec` api (refer to generated docs for full details).
     `term()` values.
 
 These functions also support an optional second argument with a list
-of options to use:
+of options to use **NYI**:
 
   * `report`, `return`, `*_errors`, `*_warnings` Report and/or return
     errors and/or warnings.
