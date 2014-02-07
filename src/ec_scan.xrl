@@ -19,8 +19,9 @@ Definitions.
 
 WS = \s\t\r\n
 OBJ = \{\}
-NOKEY = \'=#{WS}{OBJ}
-KEY = ([^{NOKEY}]+|\'(\\.|[^\'])*\')[{WS}]*
+KEYCHAR = [^\'=#{WS}{OBJ}]
+QUOTED = \'(\\.|[^\'])*\'
+KEY = ({KEYCHAR}+|{QUOTED})[{WS}]*
 
 Rules.
 
